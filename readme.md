@@ -1,6 +1,5 @@
 # Bachelor Project
 
-
 ## Initial setup
 ```shell
 # first clone repository
@@ -20,4 +19,14 @@ cmake --build . -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=INFO -DUSE_PARALLEL=true -
 
 # build cpp project
 cmake --build . --target qlever-index qlever-server qlever-upgrade-index
+```
+
+## build index
+```shell
+qlever index --index-binary ../build/qlever-index
+```
+
+## start server
+```shell
+../build/qlever-server -i olympics --port 8080
 ```
