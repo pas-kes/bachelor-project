@@ -12,7 +12,7 @@ brew install conan
 conan install . --build=missing
 
 # ensure directory
-mkdir -p build && cd build
+mkdir -p build
 
 # prebuild project 
 cmake -B build \
@@ -27,18 +27,22 @@ cmake -B build \
 
 # Tried to add gcc+ as build type to enable openmp, but it was not possible to 
 
-
 # build cpp project
-cmake --build . \
+cmake --build build \
 --target qlever-index qlever-server qlever-upgrade-index
 ```
 
+
+
 ## build index
 ```shell
+
+mkdir -p ./data/ && cd data
 qlever index --index-binary ../build/qlever-index
 ```
 
 ## start server
 ```shell
+mkdir -p ./data/ && cd data
 ../build/qlever-server -i olympics --port 8080
 ```
