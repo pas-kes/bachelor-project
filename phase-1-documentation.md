@@ -13,7 +13,7 @@ builds and all tests pass at every commit boundary.
 
 ---
 
-## [Commit 1 — `291b96d3` Introduce `IdColumn`/`ConstIdColumn` as aliases](https://github.com/ad-freiburg/qlever/pull/3442/changes/291b96d3c2d8fb75aac516a3cf3d3b51ab4cd3f8)
+## [Commit 1](https://github.com/ad-freiburg/qlever/pull/3442/changes/291b96d3c2d8fb75aac516a3cf3d3b51ab4cd3f8) — `291b96d3` Introduce `IdColumn`/`ConstIdColumn` as aliases
 
 Pure rename, no behavior change: introduces `IdColumn`/`ConstIdColumn` as
 aliases for `ql::span<Id>`/`ql::span<const Id>` in the new
@@ -22,7 +22,7 @@ spell out the span type directly. This gives the rest of the refactor a
 single seam to redefine later (see Commit 4/5) without having to touch every
 call site again.
 
-## [Commit 2 — `3305c8c9` Store `ValueId` as 1 datatype byte + full 64-bit payload word](https://github.com/ad-freiburg/qlever/pull/3442/changes/a10aa8542e96a95269d93a287753337bb52642c9)
+## [Commit 2](https://github.com/ad-freiburg/qlever/pull/3442/changes/a10aa8542e96a95269d93a287753337bb52642c9) — `3305c8c9` Store `ValueId` as 1 datatype byte + full 64-bit payload word
 
 The actual bit-layout change: `Id::BitRepresentation` goes from a packed
 4-bit-tag/60-bit-payload word to `{uint8_t datatype_; uint64_t payload_;}`,
@@ -38,7 +38,7 @@ into a `boost::asio` thread-pool allocator budget (confirmed not an issue
 introduced by this change, kept only as an explanatory note in the commit
 message).
 
-## [Commit 3 — `0edf451a` Extend `qlever-upgrade-index` for the new `ValueId` byte layout](https://github.com/ad-freiburg/qlever/pull/3442/changes/a1d43a5476e76d6e4c4ee1a616a59b9b97f4689d)
+## [Commit 3](https://github.com/ad-freiburg/qlever/pull/3442/changes/a1d43a5476e76d6e4c4ee1a616a59b9b97f4689d) — `0edf451a` Extend `qlever-upgrade-index` for the new `ValueId` byte layout
 
 Since old on-disk indexes were written with the old 60-bit-payload layout,
 `qlever-upgrade-index` needs to read the *old* format and rewrite it in the
@@ -76,7 +76,7 @@ checked-in binary files — this was necessary because the old "fake the
 version tag" trick only worked for transitions that didn't change the
 on-disk byte width, and this one does.
 
-## [Commit 4 — `824bc701` Add split-column storage machinery for `IdColumn` (unused so far)](https://github.com/ad-freiburg/qlever/pull/3442/changes/e253a92e734c70e4d966ffc3d5c1db9d3a3fa465)
+## [Commit 4](https://github.com/ad-freiburg/qlever/pull/3442/changes/e253a92e734c70e4d966ffc3d5c1db9d3a3fa465) — `824bc701` Add split-column storage machinery for `IdColumn` (unused so far)
 
 With `sizeof(Id)` now 16 bytes (vs. 8 before), storing `Id` columns as a
 plain contiguous `Id[]` array wastes 7 bytes/entry to padding. This commit
@@ -127,7 +127,7 @@ raised):**
    because ordinary function calls do trigger implicit conversion. Confirmed
    there's no way around this while keeping the proxy design — kept as-is.
 
-## [Commit 5 — `7f3c849c` Switch `IdColumn`/`ConstIdColumn` to real split-column storage](https://github.com/ad-freiburg/qlever/pull/3442/changes/aee4128c6d4ba0742e51af3b707b7d1540dca3bc)
+## [Commit 5](https://github.com/ad-freiburg/qlever/pull/3442/changes/aee4128c6d4ba0742e51af3b707b7d1540dca3bc) — `7f3c849c` Switch `IdColumn`/`ConstIdColumn` to real split-column storage
 
 The "flip the switch" commit: `IdColumn.h`'s aliases now point at
 `columnBasedIdTable::IdColumn`/`ConstIdColumn` instead of `ql::span`, and
