@@ -1,27 +1,15 @@
 # C++ Patterns Behind the Split-Column `IdColumn` Refactor
 
-Companion to `64bit_id_refactor_summary.md`. That file walks through the 5
-commits; this one collects the recurring C++ idioms those commits lean on —
+This file collects the recurring C++ idioms those [commits](https://github.com/ad-freiburg/qlever/pull/3442/commits) lean on —
 mostly consequences of one root cause: **`column[i]` no longer returns a real
 `Id&`/`const Id&`, it returns a proxy object (`IdRef`/`ConstIdRef`) that only
-*converts* to `Id`.** Once you know that, almost every "why is this written
-so oddly" question in the diff has the same answer. This is also the
-material that used to be repeated, almost verbatim, at ~30 call sites in the
-code — it now lives here once, and the in-code comments just point back to
-it.
+converts to an `Id`.** 
 
 ## Why a proxy at all?
 
-`Id` used to be a single packed 64-bit word, so a column of `Id`s was a
-plain, contiguous `Id[]`/`ql::span<Id>` — same as any other array. After this
-refactor `Id` is 16 bytes (a full 64-bit payload word + a datatype byte +
-padding), so a contiguous `Id[]` wastes 7 bytes per entry. `IdColumn` instead
-stores the payload words and datatype bytes in two separate arrays (a
-"structure of arrays", `IdColumnVector.h`), and `column[i]` returns
-`IdRef`/`ConstIdRef` — a tiny struct of two pointers (`uint64_t*` +
-`uint8_t*`) that mirrors `Id`'s read API and converts implicitly to/from
-`Id`, so that `column[i].isUndefined()` keeps compiling. It's the same idea
-as `std::vector<bool>::reference`.
+`Id` used to be a single packed 64-bit word, so a column of `Id`s was a plain, contiguous `Id[]`/`ql::span<Id>`, same as any other array. After this refactor `Id` is 16 bytes (a full 64-bit payload word + a datatype byte + padding), so a contiguous `Id[]` wastes 7 bytes per entry. 
+`IdColumn` instead stores the payload words and datatype bytes in two separate arrays (a "structure of arrays", `IdColumnVector.h`), and `column[i]` returns `IdRef`/`ConstIdRef`, a tiny struct of two pointers (`uint64_t*` + `uint8_t*`) that mirrors `Id`'s read API and converts implicitly to/from `Id`, so that `column[i].isUndefined()` keeps compiling. 
+It's the same idea as `std::vector<bool>::reference`.
 
 ```cpp
 // BasicIdRef<IsConst>, engine/idTable/IdRef.h — simplified
@@ -35,16 +23,13 @@ class BasicIdRef {
   // ... mirrors the rest of Id's read API the same way
 };
 ```
-
-Everything below is a consequence of that one design choice.
+Everything below is a consequence of that design choice.
 
 ---
 
 ## 1. Pointer-to-member can't target a proxy
 
-`&Id::isUndefined` used as a callable (`ranges::any_of(column, {}, &Id::isUndefined)`)
-relies on `std::invoke`/`obj.*pmf` semantics, which require `obj` to *literally be*
-an `Id` (or publicly derive from it) — not just be implicitly convertible to one.
+`&Id::isUndefined` used as a callable (`ranges::any_of(column, {}, &Id::isUndefined)`) relies on `std::invoke`/`obj.*pmf` semantics, which require `obj` to literally be an `Id` (or publicly derive from it), not just be implicitly convertible to one. 
 `ConstIdRef` only converts to `Id`, so it fails to bind.
 
 ```cpp
@@ -55,20 +40,14 @@ ranges::any_of(column, {}, &Id::isUndefined);
 ranges::any_of(column, [](const Id& id) { return id.isUndefined(); });
 ```
 
-The lambda works because an ordinary function call *does* trigger `ConstIdRef`'s
+The lambda works because an ordinary function call does trigger `ConstIdRef`'s
 implicit conversion operator; pointer-to-member dispatch doesn't.
-
-Recurs (as a one-line comment, `// Lambda, not &Id::X: proxy elements don't
-support pointer-to-member (see IdColumn.h).`) in `MultiColumnJoin.cpp`,
-`OptionalJoin.cpp`, `ExistsJoin.cpp`, `Minus.cpp`, `JoinAlgorithms.h` (×2),
-`NamedResultCacheSerializer.h`, `ExternalSortFunctors.h`,
-`OptionalJoinTest.cpp`.
 
 ## 2. `decltype(auto)` instead of a hardcoded `T&`/`const T&`
 
 Generic code that used to declare `auto&` or a fixed `const T&` return type
 now has to work for both: a real reference (any non-`Id` column) and a
-proxy returned *by value* (an `Id` column). `decltype(auto)` preserves
+proxy returned by value (an `Id` column). `decltype(auto)` preserves
 whichever the underlying expression actually produced.
 
 ```cpp
@@ -79,13 +58,10 @@ T& operator[](size_t i) const { return (*table_)(i, col_); }
 decltype(auto) operator[](size_t i) const { return (*table_)(i, col_); }
 ```
 
-Used in `IdTableRow.h` (`operator[]`, and the row iterator's `ValueType`),
-`GroupByImpl.cpp`, `JoinColumnMapping.h`'s `col()[idx]` accessor.
-
 ## 3. Explicit `std::array<Id, N>{...}` instead of relying on CTAD
 
-`std::array{a, b, c}` deduces its element type from its arguments. If `a`,
-`b`, `c` are `ConstIdRef` (e.g. `row[0]`, `row[1]`, `row[2]`), CTAD deduces
+`std::array{a, b, c}` deduces its element type from its arguments. 
+If `a`, `b`, `c` are `ConstIdRef` (e.g. `row[0]`, `row[1]`, `row[2]`), CTAD deduces
 `std::array<ConstIdRef, 3>`, not the intended `std::array<Id, 3>`.
 
 ```cpp
@@ -95,9 +71,6 @@ auto key = std::array{row[0], row[1], row[2]};
 // After — CTAD would otherwise deduce std::array<ConstIdRef, 3>:
 std::array<Id, 3> key{row[0], row[1], row[2]};
 ```
-
-Used in `IndexImpl.cpp` (×2), `JoinColumnMapping.h::GetColsFromTable`,
-`CompressedRelationHelpersImpl.h`, `CompressedRelationPermutationWriterImpl.h`.
 
 ## 4. `std::tie` can't bind a proxy's prvalue either
 
@@ -117,17 +90,11 @@ std::array<Id, 3> rhs{b[c1Idx], b[c2Idx], b[c3Idx]};
 return lhs < rhs;
 ```
 
-Used in `CompressedRelationHelpersImpl.h`, `CompressedRelationPermutationWriterImpl.h`,
-`LocatedTriples.cpp` (×2).
-
 ## 5. Materializing `std::vector<Id>` instead of returning a view
 
-Some functions used to return `ql::span<const Id>` — a "slice into an
-existing, contiguous column". That assumes the column *is* contiguous, which
-is no longer true for `IdColumn`. Where the caller only needs to read the
-values once (not alias them long-term), the fix is to return an owned
-`std::vector<Id>` instead — a deliberate, small, bounded copy, not a design
-regression.
+Some functions used to return `ql::span<const Id>`. 
+That assumes the column is contiguous, which is no longer true for `IdColumn`.
+Where the caller only needs to read the values once, the fix is to return an owned `std::vector<Id>` instead.
 
 ```cpp
 // Before:
@@ -139,19 +106,11 @@ std::vector<Id> graphsOf(...) const {
 }
 ```
 
-Used in `EmptyPath.cpp::graphsOf`, `PathSearch.h` (sources/targets),
-`SparqlExpressionGenerators.h::getIdsFromVariable` — the single entry point
-through which the (heavily templated, `contiguous_range`-assuming) SPARQL
-expression evaluation machinery reads a column; making that generic code
-proxy-aware was out of scope for this refactor.
-
 ## 6. `-> Id`, not `-> const Id&`
 
-Returning `const Id&` from a function whose actual result comes from a
-`ConstIdRef` conversion binds the reference to a *temporary* `Id` that dies
-when the function returns — a dangling reference, only sometimes caught by
-`-Wdangling-reference` in practice. Once a column can't hand out a real
-`const Id&` to begin with, the honest return type is `Id` (a value).
+Returning `const Id&` from a function whose actual result comes from a `ConstIdRef` conversion binds the reference to a temporary `Id` that dies
+when the function returns, a dangling reference, only sometimes caught by `-Wdangling-reference` in practice.
+Once a column can't hand out a real `const Id&` to begin with, the honest return type is `Id` (a value).
 
 ```cpp
 // Before (rowOrId[0] used to be a real Id):
@@ -162,13 +121,10 @@ const Id& firstId(const RowOrId& rowOrId) { return rowOrId[0]; }
 Id firstId(const RowOrId& rowOrId) { return rowOrId[0]; }
 ```
 
-Used in `IndexImpl.cpp`, `JoinColumnMapping.h`'s `col()[idx]`/`.front()`/`.back()`.
-
 ## 7. Why `BasicIdRef` needs its own `operator=(const BasicIdRef&)`
 
-The trickiest one, and worth a slightly longer example. `IdRef` defines
-`operator=(Id)` with write-through semantics (writes to the referenced slot,
-not to the proxy's own two pointers). That alone is *not* enough:
+`IdRef` defines `operator=(Id)` with write-through semantics (writes to the referenced slot,
+not to the proxy's own two pointers).
 
 ```cpp
 IdRef a = column[0];
@@ -179,7 +135,7 @@ a = b;  // which operator= is picked here?
 Without an explicit `operator=(const BasicIdRef&)`, the compiler generates
 its own copy-assignment operator for `IdRef`. Overload resolution always
 prefers an identity match over a user-defined conversion, so `a = b` would
-resolve to the *compiler-generated* one — which just copies `b`'s two
+resolve to the compiler-generated one, which just copies `b`'s two
 pointers into `a`, rebinding `a` to point at `b`'s slot instead of writing
 `b`'s value into `a`'s slot. That silently corrupts data instead of copying
 it, and is exactly what algorithms like `ranges::sort` rely on internally
@@ -194,7 +150,7 @@ BasicIdRef& operator=(const BasicIdRef& other) {
 ```
 
 This is also why `operator=` is declared `const` on the proxy itself (it
-mutates the *referenced* slot, not the proxy's own state) — the same
+mutates the referenced slot, not the proxy's own state) — the same
 requirement `std::vector<bool>::reference` and `std::indirectly_writable`
 impose on any proxy reference type.
 
@@ -203,12 +159,12 @@ impose on any proxy reference type.
 `ql::span` gets two `std::ranges` opt-ins "for free" that a hand-written
 span-like type has to declare explicitly:
 
-- **`enable_borrowed_range`**: without it, a *temporary* view (e.g. the
+- **`enable_borrowed_range`**: without it, a temporary view (e.g. the
   result of `column.subspan(...)`) passed straight into an algorithm like
   `ranges::equal_range` comes back as `ranges::dangling` instead of a real
   iterator, because the algorithm assumes a temporary range's iterators die
-  with it. `BasicIdColumnView` doesn't own anything — it's a pair of
-  pointers into someone else's arrays — so its iterators outlive it fine.
+  with it. `BasicIdColumnView` doesn't own anything, it's a pair of
+  pointers into someone else's arrays, so its iterators outlive it fine.
 - **`enable_view`**: without it, `ranges::views::all`/`::zip` etc. wrap a
   passed-in lvalue in a `ranges::ref_view` (a reference back to that
   specific lvalue) instead of copying the lightweight view directly — which
@@ -248,27 +204,16 @@ struct LegacyId {
 `LegacyId::convert()` is the single place that knows the three
 datatype-specific re-encodings: most datatypes just zero-extend into the
 wider payload, but `Double`/`Int`/`EncodedVal` (see
-`IndexFormatConverter.cpp`) each need actual re-encoding because the *old*
+`IndexFormatConverter.cpp`) each need actual re-encoding because the old
 format packed their value differently depending on the payload width.
 
-## 10. Sink-by-value vs. const-reference parameter
-
-Covered in detail in `64bit_id_refactor_summary.md` (Commit 3), noted here
-for completeness: `legacyScanAndConvert` took `LegacyPermutationSummary`
-by value under the assumption that the returned lazy range needed to own
-it. Since the per-block transform only ever reads a block (never moves from
-it), and both callers need `summary` again afterward anyway, a
-`const LegacyPermutationSummary&` avoids a needless copy of a potentially
-large `blocks_` vector — safe because both callers consume the returned
-range synchronously before touching `summary` again.
-
-## 11. The `sizeof(Id)` → `BYTES_PER_ID_COLUMN_ENTRY` divisor trap
+## 10. The `sizeof(Id)` → `BYTES_PER_ID_COLUMN_ENTRY` divisor trap
 
 Anywhere a block size in bytes gets converted to a row count by dividing by
 "the size of one `Id`", that divisor has to change from `sizeof(Id) == 16`
 (a materialized, padded `Id`) to `BYTES_PER_ID_COLUMN_ENTRY == 9` (1
 datatype byte + 8 payload bytes, the packed on-disk/on-wire size with no
-padding) — otherwise block boundaries silently shift and every test that
+padding), otherwise block boundaries silently shift and every test that
 hardcodes "N rows per block" as a byte count breaks.
 
 ```cpp
@@ -278,21 +223,16 @@ size_t rowsPerBlock = blockSizeInBytes / sizeof(Id);        // assumes 16
 size_t rowsPerBlock = blockSizeInBytes / BYTES_PER_ID_COLUMN_ENTRY;  // 9
 ```
 
-Fixed in `CompressedExternalIdTable.h` (4 sites), `CompressedRelation.h`,
-and correspondingly re-tuned in every test that hardcodes a block size in
-bytes (`IndexTestHelpers.h`'s central default, `CompressedRelationsTest.cpp`,
-`IndexFormatConverterTest.cpp`, `IndexScanTest.cpp`).
+## 11. Open question: `SecondaryVocabIndex`'s 60-bit cap is test-driven, not requirement-driven
 
-## 12. Open question: `SecondaryVocabIndex`'s 60-bit cap is test-driven, not requirement-driven
+Flagged for discussion, not yet changed.
 
-Flagged for discussion with the advisor, not yet changed.
-
-Before this refactor, *every* index type (`VocabIndex`, `LocalVocabIndex`,
+Before this refactor, every index type (`VocabIndex`, `LocalVocabIndex`,
 `SecondaryVocabIndex`, `TextRecordIndex`, ...) was capped at 60 usable bits,
 simply because the payload only had 60 bits to begin with (4 bits went to
 the datatype tag in the same 64-bit word). Since the datatype now lives in
 its own separate byte, the payload is a full 64-bit word for everyone, and
-`maxIndex = std::numeric_limits<T>::max()` — none of these types can
+`maxIndex = std::numeric_limits<T>::max()`, none of these types can
 overflow anymore, so their `IndexTooLargeException` paths became dead code
 and were dropped.
 
@@ -334,16 +274,16 @@ one pre-existing test assertion would keep being meaningful, rather than
 updating/removing that assertion the way the analogous checks for every
 other index type apparently were.
 
-**Options to raise with the advisor:**
+**Options to discuss:**
 - Keep it as is (maybe there's a forward-looking reason not visible yet,
   e.g. reserving headroom for a future use of those top bits).
 - Drop `maxSecondaryVocabIndex`/`IndexTooLargeException` for
   `SecondaryVocabIndex` too, for consistency with every other index type,
   and adapt/remove the one test assertion that currently exercises it.
 
-## 13. Open question: could the `GeoCellGrid` marker bit move into the datatype byte instead of the payload?
+## 12. Open question: could the `GeoCellGrid` marker bit move into the datatype byte instead of the payload?
 
-Flagged for discussion with the advisor, not yet changed.
+Flagged for discussion, not yet changed.
 
 `SplitVocabulary` (the mechanism that lets a `VocabIndex` point into either
 the regular vocabulary or a geo sub-vocabulary of WKT literals) currently
@@ -352,17 +292,16 @@ distinguishes the two by reserving the *top bit of the payload* as a marker
 next to the cell/position bits inside the same 64-bit payload word, one more
 bit of headroom has to be reserved below it too, to keep the exclusive-upper-
 bound arithmetic in `vocabIndexRangeForCells` from carrying into it (see
-section 12's counterpart discussion, and the code walkthrough given earlier
-in this session) — 2 bits of the payload spent on bookkeeping rather than
+section 11's counterpart discussion), 2 bits of the payload spent on bookkeeping rather than
 actual vocabulary addressing.
 
 `Datatype` (`global/ValueId.h:33-54`) only has 13 values (`MaxValue =
-EncodedVal`, i.e. values 0–12), so 4 of the datatype byte's 8 bits are
-currently unused. The question raised: instead of a marker *bit inside the
-payload*, why not a dedicated `Datatype::GeoVocabIndex` value (placed
+EncodedVal`, i.e. values 0–12), so 4 of the datatype byte are
+currently unused. The question raised: instead of a marker bit inside the
+payload, why not a dedicated `Datatype::GeoVocabIndex` value (placed
 directly adjacent to `VocabIndex` in the enum, the same way
 `SecondaryVocabIndex`/`LocalVocabIndex` already have to be, per the ordering
-comment right above `SecondaryVocabIndex`'s declaration) — freeing the
+comment right above `SecondaryVocabIndex`'s declaration), freeing the
 marker bit from the payload entirely, and getting the full 64 bits for pure
 cell+position addressing?
 
@@ -395,7 +334,7 @@ is a bigger change than it looks: every `switch`/`visit` over `Datatype`
 a deliberate design change to the `SplitVocabulary` layer, not something to
 fold into this refactor incidentally.
 
-**Options to raise with the advisor:**
+**Options to discuss:**
 - Keep the current marker-bit-in-payload scheme (simpler, already tested,
   entirely orthogonal to this refactor's actual goal).
 - Move the marker into a new adjacent `Datatype` value as a follow-up
