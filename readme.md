@@ -4,17 +4,17 @@
 
 | Path | What |
 |---|---|
-| `PLAN_split_layout_id.md` | the plan: new `SplitLayoutId` next to `ValueId`, PR sequence, risks |
-| `BENCHMARK_PLAN_split_layout_id.md` | which benchmarks, what they measure, how to compare old and new |
-| `TODO_id_refactor_performance.md` | accepted performance trade-offs to revisit |
-| `PROTOCOL_benchmark_baseline_2026-10-06.md` | first end-to-end baseline (master vs. benchmark branch), noise floor, branch contents |
-| `PROTOCOL_tie_vs_array_2026-10-08.md` | `std::tie` vs. `std::array` for row comparisons: measurements and the reason (inlining) |
-| `qlever-perf-testsuite/` | end-to-end A/B benchmark (index build, load, queries), see its README |
-| `archive/` | superseded documentation of the first approach |
+| `PLAN_split_layout_id.md` | plan: new `SplitLayoutId` next to the legacy Id, order of the PRs, risks |
+| `BENCHMARK_PLAN_split_layout_id.md` | which benchmarks I want, what they measure, how I compare old and new |
+| `TODO_id_refactor_performance.md` | open points that I still have to check |
+| `PROTOCOL_benchmark_baseline_2026-10-06.md` | first end to end baseline (master against benchmark branch), noise, contents of the branch |
+| `PROTOCOL_tie_vs_array_2026-10-08.md` | `std::tie` against `std::array` for row comparisons: measurements and the reason (inlining) |
+| `qlever-perf-testsuite/` | end to end A/B benchmark (index build, load, queries), see its README |
+| `archive/` | old documentation of the first approach |
 
 ## Pull requests
 
-All pull requests of `pas-kes` in `ad-freiburg/qlever` ([list](https://github.com/ad-freiburg/qlever/pulls/pas-kes)), as of 2026-10-08. The phases refer to `PLAN_split_layout_id.md`.
+These are my pull requests in `ad-freiburg/qlever` ([list on GitHub](https://github.com/ad-freiburg/qlever/pulls/pas-kes)), status of 2026-10-08. The phases (A1, B0, ...) are the ones from `PLAN_split_layout_id.md`.
 
 | PR | Title | Branch | Phase | Status |
 |---|---|---|---|---|
