@@ -161,3 +161,31 @@ What I have to check before the split layout is selected:
 - A test with a fake column storage of 9 bytes per entry (and an `Id` of 16
   bytes) needs the entry size from the table type, not from the global
   constant. That belongs to the traits PR.
+
+## `std::tie` against `std::array` on Linux (PR #3577)
+
+On macOS the arrays are faster than `std::tie` in the comparison of a located
+triple with a row. On Linux (aarch64 in Docker) they are not: with g++ 13 they
+are 13 % (`<`) and 38 % (`==`) slower, with clang 18 20 % slower for `<` and 25 %
+faster for `==`. The difference is below 1 ns per comparison. The numbers and
+the setup are in `PROTOCOL_tie_vs_array_2026-10-08.md`, section 6.
+
+What I still want to do:
+
+- Find out why the arrays are slower with g++. There the call of
+  `ValueId::compareThreeWay` is inlined in all variants, so it is not the same
+  reason as on the Mac. The array variants have more instructions. I would look
+  at the assembly of the loops and at where the two copies of the arrays go.
+- Measure on x86-64 (a real machine or the CI runner), with the compilers and
+  versions that the CI uses (g++ 11 to 13, clang 16 to 21), with libc++ on Linux
+  and in C++17 mode. So far I only have aarch64 in a VM, gcc 13 and clang 18 with
+  libstdc++.
+- Measure with the real code paths (updates, vacuum in `LocatedTriples`) and not
+  only with the micro benchmark.
+- Try a hand-written comparison with `ql::compareThreeWay` per element. In all
+  my runs on Linux it is the fastest variant, and on the Mac it is about as fast
+  as the array. It would be one small helper that works with `Id&` as well as
+  with proxies, and then neither tie nor array would be needed.
+- If x86-64 shows a loss at the hot comparator in `LocatedTriples`, decide
+  between the helper, `std::tie` for `Id&` and `std::array` only for proxies
+  (`if constexpr`), or leaving it as it is because the loss is small.

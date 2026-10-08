@@ -8,7 +8,7 @@
 | `BENCHMARK_PLAN_split_layout_id.md` | which benchmarks I want, what they measure, how I compare old and new |
 | `TODO_id_refactor_performance.md` | open points that I still have to check |
 | `PROTOCOL_benchmark_baseline_2026-10-06.md` | first end to end baseline (master against benchmark branch), noise, contents of the branch |
-| `PROTOCOL_tie_vs_array_2026-10-08.md` | `std::tie` against `std::array` for row comparisons: measurements and the reason (inlining) |
+| `PROTOCOL_tie_vs_array_2026-10-08.md` | `std::tie` against `std::array` for row comparisons: measurements on macOS and Linux, and the reason (inlining) |
 | `qlever-perf-testsuite/` | end to end A/B benchmark (index build, load, queries), see its README |
 | `archive/` | old documentation of the first approach |
 
@@ -28,7 +28,7 @@ These are my pull requests in `ad-freiburg/qlever` ([list on GitHub](https://git
 | [#3575](https://github.com/ad-freiburg/qlever/pull/3575) | Extract assignSwap utility, use it for IdTableRow swapImpl | `create_64bit_id_assign_swap` | A3 | open |
 | [#3576](https://github.com/ad-freiburg/qlever/pull/3576) | Return owned Id vectors instead of column views at a few sites | `create_64bit_id_remaining_changes` | A5 | open (title outdated after rework) |
 | [#3577](https://github.com/ad-freiburg/qlever/pull/3577) | Replace `std::tie` by `std::array` for row comparisons and projections | `create_64bit_id_tie_to_array` | A4 | open |
-| [#3578](https://github.com/ad-freiburg/qlever/pull/3578) | Route IdTable/IdTableRow element access through decltype(auto) | `create_64bit_id_trivial_type_changes` | A2 | open |
+| [#3578](https://github.com/ad-freiburg/qlever/pull/3578) | Prepare the element access of `IdTable` rows and its users for proxy references instead of `Id&` | `create_64bit_id_trivial_type_changes` | A2 | open |
 | [#3615](https://github.com/ad-freiburg/qlever/pull/3615) | Move the `Datatype` enum from `ValueId.h` into its own header `Datatype.h` | `create_64bit_id_extract_datatype` | B1 | open |
 | [#3646](https://github.com/ad-freiburg/qlever/pull/3646) | Rename `ValueId.h` to `MixedValueId.h`, add an alias `ValueId = MixedValueId` | `create_64bit_id_rename_valueId` | C7 (preparation) | open |
 
