@@ -1,0 +1,190 @@
+Targets (baseline first): old, new
+
+Index and server
+metric                             unit        old        new  ratio new/old [per-round range]
+build_wall                            s      0.706      0.711   x1.007 [0.62..1.05]
+index_size_patterns                 MiB      0.469      0.469   x1.000 [1.00..1.00]
+index_size_permutations             MiB      7.124      7.124   x1.000 [1.00..1.00]
+index_size_total                    MiB      9.026      9.026   x1.000 [1.00..1.00]
+index_size_vocabulary               MiB      1.432      1.432   x1.000 [1.00..1.00]
+load_wall                             s      0.190      0.186   x0.976 [0.78..1.31]
+server_peak_rss                     MiB    254.700    272.500   x1.070 [0.85..1.19]
+
+Queries, query_client (sorted by ratio, worst first)
+metric                             unit        old        new  ratio new/old [per-round range]
+-- new: geometric mean ratio 1.010, slower in 36 of 55 queries
+08_group-by-profession-average-height   ms     16.481     18.215   x1.105 [0.85..1.20]
+15_birth-place-group-count-order     ms     16.781     18.325   x1.092 [0.98..1.16]
+06_scientists-order-by-aggregate-count   ms     20.926     22.355   x1.068 [1.01..1.10]
+52_CONCAT_WITH_GROUP_BY              ms     18.285     19.021   x1.040 [0.99..1.05]
+30_select_group_expression           ms     12.733     13.236   x1.039 [1.00..1.05]
+41_aggregate-in-order-by             ms     12.025     12.495   x1.039 [1.00..1.07]
+51_CONCAT                            ms     20.994     21.775   x1.037 [1.01..1.06]
+05_group-by-and-rand                 ms     18.111     18.759   x1.036 [0.92..1.14]
+48_SUBSTR                            ms     14.062     14.471   x1.029 [0.97..1.05]
+11_giant-int-scientists              ms     14.363     14.761   x1.028 [1.01..1.04]
+40_aggregate-in-having-clause        ms     11.976     12.237   x1.022 [0.92..1.05]
+03_scientists-count-group-by-place-of-birth   ms     21.702     22.154   x1.021 [0.98..1.10]
+35_scoping-of-subqueries-only-externally   ms     13.437     13.716   x1.021 [0.97..1.05]
+26_bind-entity-constant              ms     16.329     16.612   x1.017 [0.98..1.06]
+27_bind-at-beginning                 ms     11.467     11.647   x1.016 [0.99..1.04]
+42_variable-from-select-clause-reusage   ms     11.910     12.085   x1.015 [0.98..1.03]
+25_bind-entity-constant              ms     15.896     16.125   x1.014 [0.97..1.02]
+02_scientists-married-to-scientists   ms     15.777     15.993   x1.014 [0.96..1.04]
+07_scientists-order-by-aggregate-avg   ms     16.659     16.873   x1.013 [0.92..1.16]
+47_distinct-with-empty-input         ms     12.456     12.600   x1.012 [0.99..1.05]
+01_scientists-from-new-york          ms     13.721     13.872   x1.011 [0.99..1.03]
+00_people-born-in-1901               ms     20.120     20.326   x1.010 [0.95..1.04]
+37_filter-on-full-scan               ms     13.073     13.193   x1.009 [0.95..1.06]
+32_subquery-one-triple-2             ms     15.952     16.094   x1.009 [0.96..1.06]
+31_subquery-one-triple-1             ms     25.437     25.649   x1.008 [0.99..1.13]
+10_group-by-gender-average-height    ms     16.130     16.263   x1.008 [0.98..1.03]
+54_pattern-trick-empty-subquery      ms     12.392     12.483   x1.007 [0.96..1.03]
+18_new-values                        ms     12.281     12.369   x1.007 [0.93..1.07]
+12_tall-float-scientists             ms     14.730     14.833   x1.007 [0.96..1.05]
+50_STRSTARTS etc                     ms     15.455     15.532   x1.005 [0.98..1.01]
+20_values-join                       ms     14.085     14.148   x1.004 [0.95..1.03]
+43_limit-on-subquery                 ms     12.051     12.102   x1.004 [0.97..1.04]
+33_property-path-without-modifiers   ms     15.263     15.315   x1.003 [0.97..1.06]
+39_grouped-variables-and-aggregates   ms     12.035     12.068   x1.003 [0.94..1.04]
+53_REPLACE                           ms     23.341     23.357   x1.001 [0.94..1.01]
+28_select_group_alias                ms     20.010     20.013   x1.000 [0.96..1.17]
+14_path_search_all_paths             ms     14.047     14.029   x0.999 [0.97..1.03]
+09_person-order-by-height            ms     14.192     14.173   x0.999 [0.98..1.04]
+17_values-empty-join                 ms     12.285     12.268   x0.999 [0.95..1.01]
+45_join-columns-in-the-presence-of-subqueries   ms     13.168     13.147   x0.998 [0.96..1.03]
+04_scientists-group-by-join-avg      ms     15.847     15.821   x0.998 [0.95..1.02]
+22_bind-rename                       ms     15.879     15.840   x0.998 [0.96..1.01]
+21_trailing-values-limit             ms     13.439     13.399   x0.997 [0.98..1.01]
+19_values-empty-join                 ms     12.382     12.324   x0.995 [0.97..1.09]
+38_complex-filter-expression         ms     14.246     14.134   x0.992 [0.96..1.05]
+13_dwarf-float-scientists            ms     14.814     14.695   x0.992 [0.98..1.03]
+24_bind-integer-constant             ms     15.834     15.639   x0.988 [0.92..1.07]
+44_limit-offset-on-subquery          ms     12.238     12.065   x0.986 [0.94..1.02]
+36_filter-on-full-scan               ms     17.408     17.112   x0.983 [0.97..1.02]
+34_scoping-of-subqueries             ms     20.579     20.228   x0.983 [0.86..1.04]
+46_optional-join-set-default-value   ms     13.308     13.018   x0.978 [0.94..1.02]
+29_select_group_number               ms     12.534     12.247   x0.977 [0.93..1.02]
+49_UCASE and LCASE                   ms     14.478     14.111   x0.975 [0.94..1.00]
+16_simple-values                     ms     11.896     11.538   x0.970 [0.95..1.02]
+23_bind-integer-constant             ms     16.254     15.743   x0.969 [0.95..1.05]
+
+Queries, query_server_exec (sorted by ratio, worst first)
+metric                             unit        old        new  ratio new/old [per-round range]
+-- new: geometric mean ratio 1.025, slower in 3 of 39 queries
+02_scientists-married-to-scientists   ms      2.000      3.000   x1.500 [1.00..1.50]
+15_birth-place-group-count-order     ms      2.000      3.000   x1.500 [0.67..1.50]
+31_subquery-one-triple-1             ms      6.000      7.000   x1.167 [0.71..1.17]
+00_people-born-in-1901               ms      3.000      3.000   x1.000 [1.00..1.00]
+01_scientists-from-new-york          ms      1.000      1.000   x1.000 [1.00..1.00]
+03_scientists-count-group-by-place-of-birth   ms      3.000      3.000   x1.000 [1.00..1.00]
+04_scientists-group-by-join-avg      ms      1.000      1.000   x1.000 [1.00..1.00]
+05_group-by-and-rand                 ms      3.000      3.000   x1.000 [1.00..1.00]
+06_scientists-order-by-aggregate-count   ms      2.000      2.000   x1.000 [1.00..1.50]
+07_scientists-order-by-aggregate-avg   ms      3.000      3.000   x1.000 [1.00..1.00]
+08_group-by-profession-average-height   ms      3.000      3.000   x1.000 [0.67..1.50]
+09_person-order-by-height            ms      1.000      1.000   x1.000 [1.00..1.00]
+10_group-by-gender-average-height    ms      2.000      2.000   x1.000 [1.00..1.00]
+11_giant-int-scientists              ms      1.000      1.000   x1.000 [1.00..1.00]
+12_tall-float-scientists             ms      1.000      1.000   x1.000 [0.50..1.00]
+13_dwarf-float-scientists            ms      1.000      1.000   x1.000 [1.00..2.00]
+14_path_search_all_paths             ms      1.000      1.000   x1.000 [1.00..2.00]
+20_values-join                       ms      1.000      1.000   x1.000 [0.50..1.00]
+22_bind-rename                       ms      3.000      3.000   x1.000 [1.00..1.00]
+23_bind-integer-constant             ms      3.000      3.000   x1.000 [1.00..1.00]
+24_bind-integer-constant             ms      3.000      3.000   x1.000 [0.67..1.00]
+25_bind-entity-constant              ms      3.000      3.000   x1.000 [1.00..1.00]
+26_bind-entity-constant              ms      3.000      3.000   x1.000 [0.75..1.00]
+28_select_group_alias                ms      6.000      6.000   x1.000 [0.86..1.00]
+30_select_group_expression           ms      1.000      1.000   x1.000 [0.00..1.00]
+32_subquery-one-triple-2             ms      4.000      4.000   x1.000 [0.75..1.00]
+33_property-path-without-modifiers   ms      2.000      2.000   x1.000 [0.67..1.00]
+34_scoping-of-subqueries             ms      6.000      6.000   x1.000 [0.83..1.00]
+36_filter-on-full-scan               ms      5.000      5.000   x1.000 [0.80..1.00]
+38_complex-filter-expression         ms      1.000      1.000   x1.000 [1.00..1.00]
+45_join-columns-in-the-presence-of-subqueries   ms      1.000      1.000   x1.000 [1.00..1.00]
+46_optional-join-set-default-value   ms      1.000      1.000   x1.000 [1.00..1.00]
+47_distinct-with-empty-input         ms      1.000      1.000   x1.000 [1.00..1.00]
+48_SUBSTR                            ms      2.000      2.000   x1.000 [1.00..1.00]
+49_UCASE and LCASE                   ms      2.000      2.000   x1.000 [1.00..1.00]
+50_STRSTARTS etc                     ms      2.000      2.000   x1.000 [0.67..1.00]
+51_CONCAT                            ms      3.000      3.000   x1.000 [0.67..1.50]
+52_CONCAT_WITH_GROUP_BY              ms      3.000      3.000   x1.000 [0.67..1.50]
+53_REPLACE                           ms      3.000      3.000   x1.000 [1.00..1.00]
+16_simple-values                     ms      0.000      0.000    -
+17_values-empty-join                 ms      0.000      0.000    -
+18_new-values                        ms      0.000      0.000    -
+19_values-empty-join                 ms      0.000      0.000    -
+21_trailing-values-limit             ms      0.000      0.000    -
+27_bind-at-beginning                 ms      0.000      0.000    -
+29_select_group_number               ms      0.000      0.000    -
+35_scoping-of-subqueries-only-externally   ms      0.000      1.000    -
+37_filter-on-full-scan               ms      0.000      0.000    -
+39_grouped-variables-and-aggregates   ms      0.000      0.000    -
+40_aggregate-in-having-clause        ms      0.000      0.000    -
+41_aggregate-in-order-by             ms      0.000      0.000    -
+42_variable-from-select-clause-reusage   ms      0.000      0.000    -
+43_limit-on-subquery                 ms      0.000      0.000    -
+44_limit-offset-on-subquery          ms      0.000      0.000    -
+54_pattern-trick-empty-subquery      ms      0.000      0.000    -
+
+Queries, query_server_planning (sorted by ratio, worst first)
+metric                             unit        old        new  ratio new/old [per-round range]
+-- new: geometric mean ratio 0.979, slower in 0 of 25 queries
+00_people-born-in-1901               ms      3.000      3.000   x1.000 [0.75..1.00]
+02_scientists-married-to-scientists   ms      1.000      1.000   x1.000 [1.00..1.00]
+03_scientists-count-group-by-place-of-birth   ms      1.000      1.000   x1.000 [0.50..2.00]
+05_group-by-and-rand                 ms      1.000      1.000   x1.000 [1.00..2.00]
+06_scientists-order-by-aggregate-count   ms      1.000      1.000   x1.000 [1.00..1.00]
+07_scientists-order-by-aggregate-avg   ms      1.000      1.000   x1.000 [1.00..1.00]
+08_group-by-profession-average-height   ms      1.000      1.000   x1.000 [1.00..1.00]
+09_person-order-by-height            ms      1.000      1.000   x1.000 [1.00..1.00]
+10_group-by-gender-average-height    ms      2.000      2.000   x1.000 [1.00..1.00]
+11_giant-int-scientists              ms      1.000      1.000   x1.000 [1.00..1.00]
+12_tall-float-scientists             ms      1.000      1.000   x1.000 [1.00..1.00]
+13_dwarf-float-scientists            ms      1.000      1.000   x1.000 [1.00..1.00]
+15_birth-place-group-count-order     ms      1.000      1.000   x1.000 [1.00..1.00]
+21_trailing-values-limit             ms      1.000      1.000   x1.000 [1.00..1.00]
+22_bind-rename                       ms      1.000      1.000   x1.000 [1.00..1.00]
+23_bind-integer-constant             ms      1.000      1.000   x1.000 [0.00..1.00]
+24_bind-integer-constant             ms      1.000      1.000   x1.000 [1.00..1.00]
+25_bind-entity-constant              ms      1.000      1.000   x1.000 [1.00..1.00]
+26_bind-entity-constant              ms      1.000      1.000   x1.000 [0.00..1.00]
+31_subquery-one-triple-1             ms      1.000      1.000   x1.000 [0.50..1.00]
+38_complex-filter-expression         ms      1.000      1.000   x1.000 [1.00..1.00]
+51_CONCAT                            ms      6.000      6.000   x1.000 [1.00..1.17]
+52_CONCAT_WITH_GROUP_BY              ms      4.000      4.000   x1.000 [0.75..1.33]
+53_REPLACE                           ms      9.000      8.000   x0.889 [0.89..1.00]
+04_scientists-group-by-join-avg      ms      3.000      2.000   x0.667 [0.67..1.00]
+01_scientists-from-new-york          ms      0.000      0.000    -
+14_path_search_all_paths             ms      0.000      0.000    -
+16_simple-values                     ms      0.000      0.000    -
+17_values-empty-join                 ms      0.000      0.000    -
+18_new-values                        ms      0.000      0.000    -
+19_values-empty-join                 ms      0.000      0.000    -
+20_values-join                       ms      0.000      0.000    -
+27_bind-at-beginning                 ms      0.000      0.000    -
+28_select_group_alias                ms      0.000      0.000    -
+29_select_group_number               ms      0.000      0.000    -
+30_select_group_expression           ms      0.000      0.000    -
+32_subquery-one-triple-2             ms      0.000      0.000    -
+33_property-path-without-modifiers   ms      0.000      0.000    -
+34_scoping-of-subqueries             ms      0.000      0.000    -
+35_scoping-of-subqueries-only-externally   ms      0.000      0.000    -
+36_filter-on-full-scan               ms      0.000      0.000    -
+37_filter-on-full-scan               ms      0.000      0.000    -
+39_grouped-variables-and-aggregates   ms      0.000      0.000    -
+40_aggregate-in-having-clause        ms      0.000      0.000    -
+41_aggregate-in-order-by             ms      0.000      0.000    -
+42_variable-from-select-clause-reusage   ms      0.000      0.000    -
+43_limit-on-subquery                 ms      0.000      0.000    -
+44_limit-offset-on-subquery          ms      0.000      0.000    -
+45_join-columns-in-the-presence-of-subqueries   ms      0.000      0.000    -
+46_optional-join-set-default-value   ms      0.000      0.000    -
+47_distinct-with-empty-input         ms      0.000      0.000    -
+48_SUBSTR                            ms      0.000      0.000    -
+49_UCASE and LCASE                   ms      0.000      0.000    -
+50_STRSTARTS etc                     ms      1.000      0.000    -
+54_pattern-trick-empty-subquery      ms      0.000      0.000    -
+
+Context: {"platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O", "machine": "arm64", "python": "3.14.7", "cpu_count": 10, "cpu": "Apple M5", "memory_bytes": "17179869184", "power": ["Now drawing from 'AC Power'"]}

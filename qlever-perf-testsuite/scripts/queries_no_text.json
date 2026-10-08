@@ -1,0 +1,277 @@
+[
+  {
+    "name": "people-born-in-1901",
+    "type": "no-text",
+    "sparql": "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nSELECT ?x ?date  WHERE {\n  ?x <Date_of_birth> ?date .\nFILTER (YEAR(?date) = 1901) .\n}"
+  },
+  {
+    "name": "scientists-from-new-york",
+    "type": "no-text",
+    "sparql": "SELECT ?x WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Place_of_birth> <New_York_City>\n}"
+  },
+  {
+    "name": "scientists-married-to-scientists",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Spouse_(or_domestic_partner)> ?y .\n    ?y <is-a> <Scientist> .\n    FILTER(?x < ?y) .\n} ORDER BY ASC(?x)"
+  },
+  {
+    "name": "scientists-count-group-by-place-of-birth",
+    "type": "no-text",
+    "sparql": "SELECT (COUNT(?x) as ?count) ?place WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Place_of_birth> ?place .\n}\nGROUP BY ?place\nORDER BY DESC(?count)"
+  },
+  {
+    "name": "scientists-group-by-join-avg",
+    "type": "no-text",
+    "sparql": "SELECT ?place (AVG(?height) as ?avg_height) WHERE {\n    ?x <Country_of_nationality> ?place .\n    ?x <Height> ?height .\n}\nGROUP BY ?place"
+  },
+  {
+    "name": "group-by-and-rand",
+    "type": "no-text",
+    "sparql": "SELECT (COUNT(?x) as ?count) ?place WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Place_of_birth> ?place .\n    ?x <Gender> <Female>\n}\nGROUP BY ?place\nORDER BY RAND()"
+  },
+  {
+    "name": "scientists-order-by-aggregate-count",
+    "type": "no-text",
+    "sparql": "SELECT ?place (COUNT(?x) as ?count2) WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Place_of_birth> ?place .\n}\nGROUP BY ?place"
+  },
+  {
+    "name": "scientists-order-by-aggregate-avg",
+    "type": "no-text",
+    "sparql": "SELECT ?profession (AVG(?height) as ?avg2) WHERE  {\n  ?x <is-a> <Scientist> .\n  ?x <Profession> ?profession .\n  ?x <Height> ?height .\n}\nGROUP BY ?profession"
+  },
+  {
+    "name": "group-by-profession-average-height",
+    "type": "no-text",
+    "sparql": "SELECT (AVG(?height) as ?avg) ?profession WHERE {\n    ?x <is-a> ?profession .\n    ?x <Height> ?height .\n}\nGROUP BY ?profession\nORDER BY DESC(?avg)"
+  },
+  {
+    "name": "person-order-by-height",
+    "type": "no-text",
+    "sparql": "SELECT ?person ?height WHERE {\n    ?person <is-a> <Person> .\n    ?person <Height> ?height .\n}\nORDER BY DESC(?height)"
+  },
+  {
+    "name": "group-by-gender-average-height",
+    "type": "no-text",
+    "sparql": "SELECT (AVG(?height) as ?avg) ?gender WHERE {\n    ?x <is-a> <Person> .\n    ?x <Gender> ?gender .\n    ?x <Height> ?height .\n}\nGROUP BY ?gender\nORDER BY DESC(?avg)"
+  },
+  {
+    "name": "giant-int-scientists",
+    "type": "no-text",
+    "sparql": "SELECT ?person ?height WHERE  {\n  ?person <is-a> <Scientist> .\n  ?person <Height> ?height .\n  FILTER(?height > 2)\n}"
+  },
+  {
+    "name": "tall-float-scientists",
+    "type": "no-text",
+    "sparql": "SELECT ?person ?height WHERE  {\n  ?person <is-a> <Scientist> .\n  ?person <Height> ?height .\n  FILTER(?height > 1.8)\n}"
+  },
+  {
+    "name": "dwarf-float-scientists",
+    "type": "no-text",
+    "sparql": "SELECT ?person ?height WHERE  {\n  ?person <is-a> <Scientist> .\n  ?person <Height> ?height .\n  FILTER(?height < 1.47)\n}"
+  },
+  {
+    "name": "path_search_all_paths",
+    "type": "no-text",
+    "sparql": "PREFIX pathSearch: <https://qlever.cs.uni-freiburg.de/pathSearch/>\nSELECT * WHERE {\n  SERVICE pathSearch: {\n    pathSearch: pathSearch:algorithm pathSearch:allPaths;\n\t            pathSearch:source <Mary_Ann_Leeper>;\n\t\t\t\tpathSearch:target <Literature_Subject>;\n\t\t\t\tpathSearch:pathColumn ?path;\n\t\t\t\tpathSearch:edgeColumn ?edge;\n\t\t\t\tpathSearch:start ?start;\n\t\t\t\tpathSearch:end ?end;\n\t{SELECT * WHERE {\n\t  ?start <is-a> ?end\n\t}}\n  }\n}"
+  },
+  {
+    "name": "birth-place-group-count-order",
+    "type": "no-text",
+    "sparql": "SELECT ?place (COUNT(?person) AS ?count) WHERE {\n  ?person <is-a> <Person> .\n  ?person <Place_of_birth> ?place\n}\nGROUP BY ?place\nHAVING (?count > 5)\nORDER BY ASC(?count)"
+  },
+  {
+    "name": "simple-values",
+    "type": "no-text",
+    "sparql": "SELECT ?a WHERE {\n  VALUES ?a { <Albert_Einstein>}\n}"
+  },
+  {
+    "name": "values-empty-join",
+    "type": "no-text",
+    "sparql": "SELECT ?a ?b ?c WHERE {\n  VALUES ?a { <Albert_Einstein>}\n  VALUES (?a ?b) {\n    (<Marie_Curie> <Joseph_Jacobson>) (<Freiherr> <Lord_of_the_Isles>)\n  }\n}"
+  },
+  {
+    "name": "new-values",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y ?z WHERE {\n  VALUES (?x ?y ?z) { (<Albert_Einstein> <Zwulm> 1879) (<Albert_Zweistein> <Ulm> 2001) }\n  VALUES ?x { <Albert_Einstein> }\n}"
+  },
+  {
+    "name": "values-empty-join",
+    "type": "no-text",
+    "sparql": "SELECT ?a ?b ?c WHERE {\n  VALUES ?a { <Albert_Einstein>}\n  VALUES (?a ?b) {\n    (<Marie_Curie> <Joseph_Jacobson>) (<Freiherr> <Lord_of_the_Isles>)\n  }\n}"
+  },
+  {
+    "name": "values-join",
+    "type": "no-text",
+    "sparql": "SELECT ?a ?b WHERE {\n  VALUES (?a ?b) {\n    (<Gerard_De_Geer> <Freiherr>)\n    (<Charles,_Prince_of_Wales> <Lord_of_the_Isles>)\n  }\n  ?a <Title> ?b .\n  ?a <Country_of_nationality> <United_Kingdom>\n}"
+  },
+  {
+    "name": "trailing-values-limit",
+    "type": "no-text",
+    "sparql": "SELECT * {\n  VALUES (?x) { (\"A\") }\n}\nLIMIT 1\nVALUES (?x) {\n  (\"A\")\n  (\"A\")\n}"
+  },
+  {
+    "name": "bind-rename",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?z WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Spouse_(or_domestic_partner)> ?y .\n    ?y <is-a> <Scientist> .\n    FILTER(?x < ?y) .\n    BIND(?y AS ?z)\n} ORDER BY ASC(?x)"
+  },
+  {
+    "name": "bind-integer-constant",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y ?z WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Spouse_(or_domestic_partner)> ?y .\n    ?y <is-a> <Scientist> .\n    FILTER(?x < ?y) .\n    BIND(42 AS ?z)\n} ORDER BY ASC(?x)"
+  },
+  {
+    "name": "bind-integer-constant",
+    "type": "no-text",
+    "sparql": "SELECT * WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Spouse_(or_domestic_partner)> ?y .\n    ?y <is-a> <Scientist> .\n    FILTER(?x < ?y) .\n    BIND(42 AS ?z)\n} ORDER BY ASC(?x)"
+  },
+  {
+    "name": "bind-entity-constant",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y ?z WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Spouse_(or_domestic_partner)> ?y .\n    ?y <is-a> <Scientist> .\n    FILTER(?x < ?y) .\n    BIND(<Al_Gore> AS ?z)\n} ORDER BY ASC(?x)"
+  },
+  {
+    "name": "bind-entity-constant",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y ?sum WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Spouse_(or_domestic_partner)> ?y .\n    ?y <is-a> <Scientist> .\n    FILTER(?x < ?y) .\n    BIND(38 AS ?z) .\n    BIND(4 AS ?a) .\n    BIND (?z + ?a AS ?sum)\n} ORDER BY ASC(?x)"
+  },
+  {
+    "name": "bind-at-beginning",
+    "type": "no-text",
+    "sparql": "SELECT * WHERE {\n    BIND(<Scientist> AS ?x)\n}"
+  },
+  {
+    "name": "select_group_alias",
+    "type": "no-text",
+    "sparql": "SELECT ?job1 (COUNT(?person) as ?number) WHERE {\n  ?person <is-a> ?job .\n}\nGROUP BY (?job as ?job1)"
+  },
+  {
+    "name": "select_group_number",
+    "type": "no-text",
+    "sparql": "SELECT (COUNT(?scientist) as ?count) ?height WHERE {\n  ?scientist <Height> ?height .\n}\nGROUP BY ?height"
+  },
+  {
+    "name": "select_group_expression",
+    "type": "no-text",
+    "sparql": "SELECT (COUNT(?scientist) as ?count) WHERE {\n  ?scientist <Height> ?height .\n}\nGROUP BY (?height * ?height - 10)"
+  },
+  {
+    "name": "subquery-one-triple-1",
+    "type": "no-text",
+    "sparql": "SELECT (COUNT(?x) as ?count) ?place WHERE {\n    {SELECT * WHERE {?x <is-a> ?y}} .\n    ?x <Place_of_birth> ?place .\n}\nGROUP BY ?place\nORDER BY DESC(?count)"
+  },
+  {
+    "name": "subquery-one-triple-2",
+    "type": "no-text",
+    "sparql": "SELECT (COUNT(?x) as ?count) ?y WHERE {\n          {SELECT * WHERE {?x <is-a> ?y}} .\n          <Albert_Einstein> <is-a> ?y .\n      }\n      GROUP BY ?y\n      ORDER BY DESC(?count)"
+  },
+  {
+    "name": "property-path-without-modifiers",
+    "type": "no-text",
+    "sparql": "SELECT ?x WHERE {\n  ?x <is-a> <Scientist>.\n  ?x <Spouse_(or_domestic_partner)>/<is-a> <Scientist> .\n}"
+  },
+  {
+    "name": "scoping-of-subqueries",
+    "type": "no-text",
+    "sparql": "SELECT ?cls (count(?s) as ?cnt) WHERE {\n  {SELECT DISTINCT ?cls WHERE {?s <is-a> ?cls} }\n  ?s <is-a> ?cls .\n} \nGROUP BY ?cls"
+  },
+  {
+    "name": "scoping-of-subqueries-only-externally",
+    "type": "no-text",
+    "sparql": "SELECT ?x WHERE {\n  SELECT ?x WHERE {\n    <Albert_Einstein> ?y ?x . \n    BIND (?y AS ?z)}\n}"
+  },
+  {
+    "name": "filter-on-full-scan",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y ?z WHERE {\n  ?x ?y ?z .\n  FILTER (?x = ?z)\n}"
+  },
+  {
+    "name": "filter-on-full-scan",
+    "type": "no-text",
+    "sparql": "SELECT ?x WHERE {\n  ?x <Children> ?x .\n}"
+  },
+  {
+    "name": "complex-filter-expression",
+    "type": "no-text",
+    "sparql": "SELECT * WHERE {\n  ?x <is-a> <Scientist> .\n  ?x <Height> ?height\n  FILTER (?x < <B> || ?height / 2 > 1.0)\n}"
+  },
+  {
+    "name": "grouped-variables-and-aggregates",
+    "type": "no-text",
+    "sparql": "SELECT (AVG(?x + ?y) as ?avg) (?x + COUNT(?y) AS ?cnt) WHERE {\n  VALUES (?x ?y) { (0.5 1.5) (0.5 3.5) (1.2 2.8)}\n} GROUP BY ?x"
+  },
+  {
+    "name": "aggregate-in-having-clause",
+    "type": "no-text",
+    "sparql": "SELECT ?x WHERE {\n  VALUES (?x ?y) { (0.5 1.5) (0.5 3.5) (1.2 2.8)}\n} GROUP BY ?x\n  HAVING (?x + COUNT(?y) > 2.3)"
+  },
+  {
+    "name": "aggregate-in-order-by",
+    "type": "no-text",
+    "sparql": "SELECT (AVG(?x + ?y) as ?avg) WHERE {\n  VALUES (?x ?y) { (0.5 1.5) (0.5 3.5) (1.2 2.8)}\n} GROUP BY ?x\n  ORDER BY (- SUM(?y))"
+  },
+  {
+    "name": "variable-from-select-clause-reusage",
+    "type": "no-text",
+    "sparql": "SELECT (AVG(?x + ?y) as ?avg) (?avg + COUNT(?y) * 0.5 AS ?b) WHERE {\n  VALUES (?x ?y) { (0.5 1.5) (0.5 3.5) (1.2 2.8)}\n} GROUP BY ?x"
+  },
+  {
+    "name": "limit-on-subquery",
+    "type": "no-text",
+    "sparql": "SELECT (SUM(?x) as ?sum) WHERE {\n  SELECT ?x WHERE {\n    VALUES ?x { 2 3 4 5}\n  } ORDER BY DESC(?x) LIMIT 2\n}"
+  },
+  {
+    "name": "limit-offset-on-subquery",
+    "type": "no-text",
+    "sparql": "SELECT (SUM(?x) as ?sum) WHERE {\n  SELECT ?x WHERE {\n    VALUES ?x { 2 3 4 5}\n  } ORDER BY DESC(?x) LIMIT 2 OFFSET 1\n}"
+  },
+  {
+    "name": "join-columns-in-the-presence-of-subqueries",
+    "type": "no-text",
+    "sparql": "SELECT ?a ?b WHERE {\n  VALUES ?a { 1 }\n  { SELECT ?a ?b WHERE {\n\t{ VALUES ?c { 42} }\n    UNION\n    { VALUES (?a ?b) { (1 3) } }\n  } }\n}"
+  },
+  {
+    "name": "optional-join-set-default-value",
+    "type": "no-text",
+    "sparql": "SELECT ?x ?y WHERE {\n  VALUES (?x ?y) { (1 UNDEF) (2 2) (3 UNDEF)}\n  OPTIONAL {VALUES (?x ?y) { (1 5) }}\n  OPTIONAL { VALUES ?y { 34 }}\n}"
+  },
+  {
+    "name": "distinct-with-empty-input",
+    "type": "no-text",
+    "sparql": "SELECT DISTINCT ?x WHERE {\n  ?x <not_existing_310131492157> <adjfoie.axjdi>\n}"
+  },
+  {
+    "name": "SUBSTR",
+    "type": "no-text",
+    "sparql": "SELECT ?x (SUBSTR(STR(?x), 4) as ?sub) (SUBSTR(STR(?x), 2, 3) as ?sub2) WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Gender> <Female>  .\n    FILTER (?x > <Yzz>) .\n}"
+  },
+  {
+    "name": "UCASE and LCASE",
+    "type": "no-text",
+    "sparql": "SELECT ?x (UCASE(STR(?x)) as ?upper) (LCASE(STR(?x)) as ?lower) WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Gender> <Female>  .\n    FILTER (?x > <Yzz>) .\n}"
+  },
+  {
+    "name": "STRSTARTS etc",
+    "type": "no-text",
+    "sparql": "SELECT ?x (STRSTARTS(STR(?x), \"Ze\") as ?start) (STRENDS(STR(?x), \"i\") AS ?end) \n          (CONTAINS(STR(?x), \"a_\") as ?cont) (STRAFTER(STR(?x), \"_\") as ?after) \n          (STRBEFORE(STR(?x), \"e\") as ?before) \n          WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Gender> <Female>  .\n    FILTER (?x > <Yzz>) .\n}"
+  },
+  {
+    "name": "CONCAT",
+    "type": "no-text",
+    "sparql": "SELECT ?x (CONCAT(\"Name: \", STR(?x), \" \", \"Year: \", STR(YEAR(?date))) as ?f) WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Gender> <Female>  .\n    ?x <Date_of_birth> ?date\n    FILTER (?x > <Yzz>) .\n}"
+  },
+  {
+    "name": "CONCAT_WITH_GROUP_BY",
+    "type": "no-text",
+    "sparql": "SELECT ?x (CONCAT(\"Name: \", STR(?x), \" \", \"Year: \", SAMPLE(STR(YEAR(?date)))) as ?f) WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Gender> <Female>  .\n    ?x <Date_of_birth> ?date\n    FILTER (?x > <Yzz>) .\n}\nGROUP BY ?x"
+  },
+  {
+    "name": "REPLACE",
+    "type": "no-text",
+    "sparql": "SELECT ?x (REPLACE(STR(?x), \"e.\", \"-\") as ?f) (REPLACE(STR(?x), \"(?i)r\", \"\") as ?g) WHERE {\n    ?x <is-a> <Scientist> .\n    ?x <Gender> <Female>  .\n    ?x <Date_of_birth> ?date\n    FILTER (?x > <Yzz>) .\n}"
+  },
+  {
+    "name": "pattern-trick-empty-subquery",
+    "type": "no-text",
+    "sparql": "PREFIX foo: <https://example.org/foo#>\nSELECT ?p  {\n  ?s foo:bar foo:Baz .\n  ?s ?p ?o\n}\nGROUP BY ?p"
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "started": "2026-10-06T16:31:46",
+  "labels": [
+    "old",
+    "new"
+  ],
+  "machine": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.7",
+    "cpu_count": 10,
+    "cpu": "Apple M5",
+    "memory_bytes": "17179869184",
+    "power": [
+      "Now drawing from 'AC Power'"
+    ]
+  },
+  "mode": "container",
+  "limits": {
+    "cpus": "4",
+    "memory": "8g",
+    "threads": 4
+  },
+  "qlever_cli": "qlever 0.6.0",
+  "parameters": {
+    "target": "['new=/Users/pascalkessler/dev-builds/qlever/qlever']",
+    "container": "True",
+    "checkout": "['old=a815b3b71a6c764d927332dcd5505fe6436ad214']",
+    "repo": "None",
+    "cpus": "4",
+    "memory": "8g",
+    "threads": "4",
+    "memory_for_queries": "2G",
+    "rounds": "5",
+    "reps": "5",
+    "warmup": "2",
+    "port": "9199",
+    "max_queries": "None",
+    "nt_file": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/dataset/scientists.nt",
+    "settings_file": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/scripts/e2e-build-settings.json",
+    "queries_json": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/scripts/queries_no_text.json",
+    "workdir": "/Users/pascalkessler/dev-builds/qlever/qlever-ab-work",
+    "out_dir": "None",
+    "build_cpus": "2",
+    "build_only": "False",
+    "dry_run": "False"
+  },
+  "inputs": {
+    "nt_sha256": "2d78fd4cf5d994ad99e5bad15c675ff28e5695120da32aa76ceb35d7f65cc452",
+    "queries_sha256": "7d39ea05e57ae6de952c7efdd737046c71d59eb27c21a949aa8eaff6704c2fea",
+    "settings_sha256": "8e72668e63365afafc922751e6afa4f7c99469c0f4c84f18b4d3752e29c59ce1",
+    "num_queries": 55
+  },
+  "targets": {
+    "old": {
+      "image": "qlever-bench-old:370fb21d7048"
+    },
+    "new": {
+      "image": "qlever-bench-new:f58cd0e6fd56"
+    }
+  }
+}

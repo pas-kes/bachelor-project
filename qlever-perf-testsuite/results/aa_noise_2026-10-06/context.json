@@ -1,0 +1,56 @@
+{
+  "started": "2026-10-06T13:45:57",
+  "labels": [
+    "old",
+    "new"
+  ],
+  "machine": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.7",
+    "cpu_count": 10,
+    "cpu": "Apple M5",
+    "memory_bytes": "17179869184",
+    "power": [
+      "Now drawing from 'Battery Power'"
+    ]
+  },
+  "parameters": {
+    "target": "['old=/Users/pascalkessler/dev-builds/qlever/qlever/build', 'new=/Users/pascalkessler/dev-builds/qlever/qlever/build']",
+    "rounds": "3",
+    "reps": "5",
+    "warmup": "2",
+    "port": "9099",
+    "memory": "2GB",
+    "server_arg": "[]",
+    "nt_file": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/dataset/scientists.nt",
+    "settings_file": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/scripts/e2e-build-settings.json",
+    "queries_json": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/scripts/queries_no_text.json",
+    "workdir": "/private/tmp/claude-501/-Users-pascalkessler-dev-builds-qlever/0eeea0e7-2636-49d7-b749-1afc494194dd/scratchpad/ab_work",
+    "out_dir": "/Users/pascalkessler/Library/Mobile Documents/com~apple~CloudDocs/files/studium/module/semester_7/bachelor_project/documentation/bachelor-project/qlever-perf-testsuite/results/aa_noise_2026-10-06",
+    "max_queries": "None",
+    "summarize_only": "None"
+  },
+  "inputs": {
+    "nt_sha256": "2d78fd4cf5d994ad99e5bad15c675ff28e5695120da32aa76ceb35d7f65cc452",
+    "queries_sha256": "7d39ea05e57ae6de952c7efdd737046c71d59eb27c21a949aa8eaff6704c2fea",
+    "settings_sha256": "8e72668e63365afafc922751e6afa4f7c99469c0f4c84f18b4d3752e29c59ce1",
+    "num_queries": 55
+  },
+  "binaries": {
+    "old": {
+      "server_version": [
+        "/Users/pascalkessler/dev-builds/qlever/qlever/build/qlever-server 97a0eb31"
+      ],
+      "server_sha256": "6245f1cea694a1d7dd67ba0e18112f53af7aa76027b6026651eea067d3c340cc",
+      "index_sha256": "1611e4fca9486df4d4e93e0c9392399de16ca3cbeb29a8fc9e12d606f4f18dfb"
+    },
+    "new": {
+      "server_version": [
+        "/Users/pascalkessler/dev-builds/qlever/qlever/build/qlever-server 97a0eb31"
+      ],
+      "server_sha256": "6245f1cea694a1d7dd67ba0e18112f53af7aa76027b6026651eea067d3c340cc",
+      "index_sha256": "1611e4fca9486df4d4e93e0c9392399de16ca3cbeb29a8fc9e12d606f4f18dfb"
+    }
+  }
+}
