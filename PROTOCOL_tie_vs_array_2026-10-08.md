@@ -209,7 +209,71 @@ Linux), only gcc 13 and clang 18, and it is the micro benchmark with the four
 variants and not the benchmark of the QLever infrastructure. I forced the
 inlining on Linux only, not again on the Mac.
 
-## 7. Reproduce
+## 7. Splitting `ValueId::compareThreeWay`
+
+In the review Johannes suggested to keep only the cheap standard case in
+`compareThreeWay`, which is that no `LocalVocabIndex` is involved and the bits
+are compared, and to always inline it. The rest would go into a separate function
+that is not inlined, because it is expensive anyway. I tried this in a separate
+worktree (not in the PR). The change in `src/global/ValueId.h`:
+
+```cpp
+// the rare case, not inlined
+AD_NO_INLINE QL_CONSTEXPR auto compareThreeWayOneIsLocalVocab(
+    const ValueId& other) const {
+  // both are LocalVocabIndex, or exactly one: unchanged code from before
+}
+
+// the common case, always inlined
+AD_ALWAYS_INLINE QL_CONSTEXPR auto compareThreeWay(const ValueId& other) const {
+  using enum Datatype;
+  if (getDatatype() != LocalVocabIndex &&
+      other.getDatatype() != LocalVocabIndex) {
+    return ql::compareThreeWay(_bits, other._bits);
+  }
+  return compareThreeWayOneIsLocalVocab(other);
+}
+```
+
+The only other change is the include of `util/CompilerExtensions.h` for the two
+macros. The logic of the rare case is the same as before.
+
+I built the benchmark once without and once with this change (same worktree,
+same flags as in section 1), copied both binaries and ran them alternately 15
+times each. Median over 5M rows, range in brackets:
+
+| Comparison | Variant | before | with the split |
+|---|---|---|---|
+| `triple < row` | `std::tie` | 10.8 ms [9.6..12.0] | 6.2 ms [6.1..7.4] |
+| `triple < row` | `std::array<Id, 3>` | 8.0 ms [7.1..8.3] | 8.1 ms [7.9..9.0] |
+| `triple == row` | `std::tie` | 10.1 ms [9.5..11.2] | 5.9 ms [5.7..6.3] |
+| `triple == row` | `std::array<Id, 3>` | 8.2 ms [7.2..8.9] | 6.5 ms [6.3..6.9] |
+
+What I take from it:
+
+- `std::tie` gets about 40 % faster with the split (10.8 to 6.2 ms for `<`,
+  10.1 to 5.9 ms for `==`).
+- The array does not change for `<`, because it was already inlined, and gets a
+  bit faster for `==`.
+- So after the split `std::tie` is the fastest variant. The array is 1.9 ms
+  (30 %, about 0.4 ns per row) slower for `<` and 0.5 ms (9 %, about 0.1 ns per
+  row) slower for `==`.
+- This fits section 3: the difference between tie and array came from whether
+  `compareThreeWay` is inlined. In the binary without the change there is an
+  out-of-line `ValueId::compareThreeWay`. With the change only
+  `compareThreeWayOneIsLocalVocab` is out of line.
+
+For the PR this speaks for keeping `std::tie` for `Id&` and using something else
+only for proxies. The change of `compareThreeWay` would be a PR of its own.
+
+Limits of this part: only macOS with Apple Clang, only the micro benchmark. The
+machine was not quiet (load average around 9, WindowServer and CLion were
+running), the interleaved runs should affect both binaries in the same way but
+the numbers are still a bit noisy. I did not measure Linux, the effect on the
+rest of QLever (code size, joins, sort), the test suite with the change, or
+GCC 8 in C++17 mode.
+
+## 8. Reproduce
 
 ```bash
 cd build
@@ -226,3 +290,8 @@ For Linux I mounted the repository into an `ubuntu:24.04` container (under
 with the `-D` and `-I` flags from the ninja command of a test, plus the stubs.
 For the run with `flatten` I added `-DFLATTEN=[[gnu::flatten]]` to the compile
 command, the benchmark functions have this macro in their attributes.
+
+For section 7 I built `TieVsArrayBenchmark` in a worktree at the tip of the
+branch, copied the binary, applied the change to `ValueId.h`, built again and
+copied the second binary. Both binaries were run alternately 15 times with
+`-p`.

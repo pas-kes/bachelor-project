@@ -8,7 +8,7 @@
 | `BENCHMARK_PLAN_split_layout_id.md` | which benchmarks I want, what they measure, how I compare old and new |
 | `TODO_id_refactor_performance.md` | open points that I still have to check |
 | `PROTOCOL_benchmark_baseline_2026-10-06.md` | first end to end baseline (master against benchmark branch), noise, contents of the branch |
-| `PROTOCOL_tie_vs_array_2026-10-08.md` | `std::tie` against `std::array` for row comparisons: measurements on macOS and Linux, and the reason (inlining) |
+| `PROTOCOL_tie_vs_array_2026-10-08.md` | `std::tie` against `std::array` for row comparisons: measurements on macOS and Linux, the reason (inlining), and the effect of splitting `compareThreeWay` |
 | `qlever-perf-testsuite/` | end to end A/B benchmark (index build, load, queries), see its README |
 | `archive/` | old documentation of the first approach |
 

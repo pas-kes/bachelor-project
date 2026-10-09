@@ -189,3 +189,8 @@ What I still want to do:
 - If x86-64 shows a loss at the hot comparator in `LocatedTriples`, decide
   between the helper, `std::tie` for `Id&` and `std::array` only for proxies
   (`if constexpr`), or leaving it as it is because the loss is small.
+- The split of `ValueId::compareThreeWay` (cheap case always inlined, rest out
+  of line, `PROTOCOL_tie_vs_array_2026-10-08.md`, section 7) is only measured on
+  the Mac with the micro benchmark. Still to do: Linux with g++ and clang, the
+  effect on code size and on joins and sort, the test suite with the change, and
+  GCC 8 in C++17 mode. If it holds, it is a PR of its own.
