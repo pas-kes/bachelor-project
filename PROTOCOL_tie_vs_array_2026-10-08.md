@@ -264,13 +264,10 @@ What I take from it:
   `compareThreeWayOneIsLocalVocab` is out of line.
 
 For the PR this speaks for keeping `std::tie` for `Id&` and using something else
-only for proxies. The change of `compareThreeWay` would be a PR of its own.
+only for proxies.
 
-Limits of this part: only macOS with Apple Clang, only the micro benchmark. The
-machine was not quiet (load average around 9, WindowServer and CLion were
-running), the interleaved runs should affect both binaries in the same way but
-the numbers are still a bit noisy. I did not measure Linux, the effect on the
-rest of QLever (code size, joins, sort), the test suite with the change, or
+Limits of this part: only macOS with Apple Clang, only the micro benchmark.
+I did not measure Linux, the effect on the rest of QLever (code size, joins, sort), the test suite with the change, or
 GCC 8 in C++17 mode.
 
 ## 8. Reproduce
