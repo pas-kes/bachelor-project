@@ -23,6 +23,19 @@ times depend on the machine.
 - `scripts/e2e-build-settings.json` has the index build settings of QLever's
   e2e test. Every build uses the same settings.
 - `dataset/scientists.nt` is the unzipped e2e "scientists" data set (18 MB).
+- `tie_variants_benchmark/TieVariantsBenchmark.cpp` is a micro benchmark for the
+  candidates of `tieHelper` in `LocatedTriples.cpp` (`std::tie`, a tie that
+  falls back to a tuple of `Id`s, a tuple of references and proxies, and
+  `std::array`), for rows that return `Id&` and for rows that return a proxy.
+  It is only for me and not part of the QLever repository. To run it I copy the
+  file to `benchmark/` of a checkout, add
+  `addAndLinkBenchmark(TieVariantsBenchmark engine testUtil)` to
+  `benchmark/CMakeLists.txt`, build the target and run
+  `./benchmark/TieVariantsBenchmark -p`. The results are in section 8 of
+  `../PROTOCOL_tie_vs_array_2026-10-08.md`. The folder also has the scripts for
+  the Linux container (`linux/`), the change of `compareThreeWay` that was
+  tested (`compareThreeWay_split.patch`), `run_alternating_mac.py` and the raw
+  results (`results/`).
 - `results/` has one directory per run (`measurements.csv`, `summary.csv`,
   `report.txt`, `context.json`). `aa_noise_2026-10-06/` is an A/A run (the same
   binaries twice). It shows the noise of my laptop: on this data set,

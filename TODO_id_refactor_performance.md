@@ -162,35 +162,47 @@ What I have to check before the split layout is selected:
   bytes) needs the entry size from the table type, not from the global
   constant. That belongs to the traits PR.
 
-## `std::tie` against `std::array` on Linux (PR #3577)
+## `std::tie`, `std::array` and `compareThreeWay` in `LocatedTriples` (PR #3577)
 
-On macOS the arrays are faster than `std::tie` in the comparison of a located
-triple with a row. On Linux (aarch64 in Docker) they are not: with g++ 13 they
-are 13 % (`<`) and 38 % (`==`) slower, with clang 18 20 % slower for `<` and 25 %
-faster for `==`. The difference is below 1 ns per comparison. The numbers and
-the setup are in `PROTOCOL_tie_vs_array_2026-10-08.md`, section 6.
+Section 8 of `PROTOCOL_tie_vs_array_2026-10-08.md` has the realistic benchmark
+(loop of `mergeTriplesImpl`, real `IdColumnVector` proxy, stand-in for the
+planned `Id`, macOS and a Linux container with g++ 13 and clang 18). It
+explains the open question from before: in the real code `compareThreeWay` of
+`ValueId` is not inlined (two calls per compared column with all three
+compilers), and then the array is faster than `std::tie` on Apple Clang and g++.
+As soon as `compareThreeWay` is inlined, `std::tie` is faster than the array.
+Variants A (`std::tie` for lvalues, a tuple of `Id`s for proxies) and B (a tuple
+of references for lvalues and of proxies for proxies) are the same code as master
+for `Id&`. The PR uses B.
 
 What I still want to do:
 
-- Find out why the arrays are slower with g++. There the call of
-  `ValueId::compareThreeWay` is inlined in all variants, so it is not the same
-  reason as on the Mac. The array variants have more instructions. I would look
-  at the assembly of the loops and at where the two copies of the arrays go.
+- TODO<pas-kes>: As soon as the proxies of the split layout are used in
+  `LocatedTriples` (a real `IdTable` on `IdColumnVector` and the planned
+  `SplitLayoutId`), measure B against A again with `TieVariantsBenchmark` and
+  with the real `mergeTriples`. In the stand-in benchmark B is slower than A on
+  Apple Clang and g++ and faster on clang 18 for the bridge proxy, so the result
+  of the real proxy decides. Switching is a change of `tieHelper` only.
 - Measure on x86-64 (a real machine or the CI runner), with the compilers and
   versions that the CI uses (g++ 11 to 13, clang 16 to 21), with libc++ on Linux
-  and in C++17 mode. So far I only have aarch64 in a VM, gcc 13 and clang 18 with
-  libstdc++.
-- Measure with the real code paths (updates, vacuum in `LocatedTriples`) and not
-  only with the micro benchmark.
-- Try a hand-written comparison with `ql::compareThreeWay` per element. In all
-  my runs on Linux it is the fastest variant, and on the Mac it is about as fast
-  as the array. It would be one small helper that works with `Id&` as well as
-  with proxies, and then neither tie nor array would be needed.
-- If x86-64 shows a loss at the hot comparator in `LocatedTriples`, decide
-  between the helper, `std::tie` for `Id&` and `std::array` only for proxies
-  (`if constexpr`), or leaving it as it is because the loss is small.
-- The split of `ValueId::compareThreeWay` (cheap case always inlined, rest out
-  of line, `PROTOCOL_tie_vs_array_2026-10-08.md`, section 7) is only measured on
-  the Mac with the micro benchmark. Still to do: Linux with g++ and clang, the
-  effect on code size and on joins and sort, the test suite with the change, and
-  GCC 8 in C++17 mode. If it holds, it is a PR of its own.
+  and in C++17 mode. So far I only have aarch64 (the Mac and a VM on it), g++ 13
+  and clang 18 with libstdc++.
+- Replace the stand-ins in the benchmark when the real classes exist: the
+  planned `SplitLayoutId`, and an `IdTable` on the split column storage (needs
+  the traits PR).
+- Change of `ValueId::compareThreeWay` (cheap case always inlined, rest out of
+  line, `compareThreeWay_split.patch`): it gains about 30 % on Apple Clang and 60
+  % on g++ in the merge loop, but does nothing for `std::tie` with clang 18.
+  Still to do: the effect on code size and on joins and sort, the test suite
+  with the change, and GCC 8 in C++17 mode. If it holds, it is a PR of its own.
+- One three-way comparison per row in `mergeTriplesImpl` instead of `lessThan`
+  and then `equal`: saves 30 to 65 % of the comparison time in the benchmark.
+  Needs a change of the loop, so a PR of its own.
+- A hand-written comparison per entry (no tuple, "helper" in the benchmark) is
+  the best or tied for best everywhere once `compareThreeWay` is inlined. Would
+  need a change of the callers.
+- The check for `LocalVocabIndex` in `compareThreeWay` costs about half of the
+  comparison time ("helper (bits)"). Check if a test on block level is possible.
+- Why the tuple of proxies (B) is slower than A with some compilers and faster
+  with others (clang 18 with the change: 53.8 against 81.3 ms) is not explained.
+  I would look at the assembly of the two loops.

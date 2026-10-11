@@ -1,0 +1,49 @@
+diff --git a/src/global/ValueId.h b/src/global/ValueId.h
+index 9159bbc9..58bb22b4 100644
+--- a/src/global/ValueId.h
++++ b/src/global/ValueId.h
+@@ -21,6 +21,7 @@
+ #include "rdfTypes/GeoPoint.h"
+ #include "util/Algorithm.h"
+ #include "util/BitUtils.h"
++#include "util/CompilerExtensions.h"
+ #include "util/DateYearDuration.h"
+ #include "util/NBitInteger.h"
+ #include "util/Serializer/Serializer.h"
+@@ -162,13 +163,13 @@ class ValueId {
+   // uses, rejects the branches below in a relaxed-constexpr function
+   // ("expression `<statement>` is not a constant expression"), and nothing
+   // compares `Id`s at compile time anyway.
+-  QL_CONSTEXPR auto compareThreeWay(const ValueId& other) const {
++  // The rare case of `compareThreeWay`: at least one of the `Id`s is a
++  // `LocalVocabIndex`. It is not inlined, because it is expensive anyway.
++  AD_NO_INLINE QL_CONSTEXPR auto compareThreeWayOneIsLocalVocab(
++      const ValueId& other) const {
+     using enum Datatype;
+     auto type = getDatatype();
+     auto otherType = other.getDatatype();
+-    if (type != LocalVocabIndex && otherType != LocalVocabIndex) {
+-      return ql::compareThreeWay(_bits, other._bits);
+-    }
+     if (type == LocalVocabIndex && otherType == LocalVocabIndex) [[unlikely]] {
+       return ql::compareThreeWay(*getLocalVocabIndex(),
+                                  *other.getLocalVocabIndex());
+@@ -194,6 +195,18 @@ class ValueId {
+ 
+     return ql::compareThreeWay(_bits, other._bits);
+   }
++
++  // The common case (no `LocalVocabIndex` involved) is a comparison of the
++  // bits and is always inlined.
++  AD_ALWAYS_INLINE QL_CONSTEXPR auto compareThreeWay(
++      const ValueId& other) const {
++    using enum Datatype;
++    if (getDatatype() != LocalVocabIndex &&
++        other.getDatatype() != LocalVocabIndex) {
++      return ql::compareThreeWay(_bits, other._bits);
++    }
++    return compareThreeWayOneIsLocalVocab(other);
++  }
+   // NOTE: All the comparison operators are `QL_CONSTEXPR` and not `constexpr`,
+   // because they call `compareThreeWay` above, see the note there.
+   QL_DEFINE_CUSTOM_THREEWAY_OPERATOR_LOCAL_QL_CONSTEXPR(ValueId)
